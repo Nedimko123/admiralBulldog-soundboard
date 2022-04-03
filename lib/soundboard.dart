@@ -164,8 +164,25 @@ class _MyAppState extends State<MyApp> {
                                     title: Text(
                                         searchList[index]['title'].toString()),
                                     onTap: () async {
-                                      await player.setAsset('assets/' +
-                                          searchList[index]['link'].toString());
+                                      ScaffoldMessenger.of(context)
+                                          .hideCurrentSnackBar();
+                                      var duration = await player.setAsset(
+                                          'assets/' +
+                                              searchList[index]['link']
+                                                  .toString());
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(SnackBar(
+                                        backgroundColor:
+                                            Colors.green.withOpacity(0.85),
+                                        content: Text('Playing: ' +
+                                            searchList[index]['title']),
+                                        duration: duration as Duration,
+                                        action: SnackBarAction(
+                                            label: 'STOP',
+                                            onPressed: () {
+                                              player.stop();
+                                            }),
+                                      ));
                                       player.play();
                                     },
                                   ),
