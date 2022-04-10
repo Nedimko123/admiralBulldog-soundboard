@@ -8,6 +8,7 @@ import 'dart:io';
 import 'utils.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 
 class SavedSounds extends StatefulWidget {
   const SavedSounds({Key? key}) : super(key: key);
@@ -15,8 +16,6 @@ class SavedSounds extends StatefulWidget {
   @override
   State<SavedSounds> createState() => _SavedSoundsState();
 }
-
-final AudioPlayer player = AudioPlayer();
 
 class _SavedSoundsState extends State<SavedSounds> {
   @override
@@ -55,9 +54,25 @@ class _SavedSoundsState extends State<SavedSounds> {
                             icon: const Icon(Icons.favorite)),
                         title: Text(saved[index]['title'].toString()),
                         onTap: () async {
-                          await player.setAsset(
+                          Get.closeCurrentSnackbar();
+                          var duration = await player1.setAsset(
                               'assets/' + saved[index]['link'].toString());
-                          player.play();
+                          Get.snackbar('Playing:', '${saved[index]['title']}',
+                              duration: duration,
+                              backgroundColor:
+                                  Colors.lightGreen.withOpacity(0.5),
+                              animationDuration: Duration(milliseconds: 570),
+                              mainButton: TextButton(
+                                onPressed: () {
+                                  player1.stop();
+                                  Get.closeCurrentSnackbar();
+                                },
+                                child: const Text(
+                                  'STOP',
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ));
+                          player1.play();
                         },
                       ),
                     ],

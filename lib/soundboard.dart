@@ -16,6 +16,8 @@ import 'utils.dart';
 //Scrolling
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
+import 'package:get/get.dart';
+
 class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
 
@@ -24,8 +26,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final AudioPlayer player = AudioPlayer();
-
   //Storing data and Loading it
 
   //
@@ -37,7 +37,11 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     read();
+    readBox();
+    sliderreadBox();
 
+    player1.setVolume(box.read('slider1') as double);
+    player1.setPitch(box.read('slider2') as double);
     super.initState();
   }
 
@@ -71,42 +75,47 @@ class _MyAppState extends State<MyApp> {
     return Scaffold(
         body: Column(
           children: [
-            SizedBox(
-              child: Container(
-                decoration: BoxDecoration(color: Colors.green[400]),
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 4, horizontal: 15),
-                  child: Container(
-                    decoration: BoxDecoration(
-                        color: Colors.green[300],
-                        borderRadius: BorderRadius.circular(20)),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 0, horizontal: 10),
-                      child: TextField(
-                        onChanged: (value) {
-                          setState(() {
-                            searchList = [];
-                            for (var map in soundBoard) {
-                              if (map["title"]!.contains(value.toLowerCase())) {
-                                // your list of map contains key "title" which has value yep2
-                                searchList.add(map);
-                              }
-                            }
-                          });
-                        },
-                        controller: _textEditingController,
-                        decoration: const InputDecoration(
-                            border: InputBorder.none,
-                            hintText: 'Search a specific sound!'),
+            box.read('searchbar')
+                ? SizedBox(
+                    child: Container(
+                      decoration: BoxDecoration(color: Colors.green[400]),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 4, horizontal: 15),
+                        child: Container(
+                          decoration: BoxDecoration(
+                              color: Colors.green[300],
+                              borderRadius: BorderRadius.circular(20)),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 0, horizontal: 10),
+                            child: TextField(
+                              onChanged: (value) {
+                                setState(() {
+                                  searchList = [];
+                                  for (var map in soundBoard) {
+                                    if (map["title"]!
+                                        .contains(value.toLowerCase())) {
+                                      // your list of map contains key "title" which has value yep2
+                                      searchList.add(map);
+                                    }
+                                  }
+                                });
+                              },
+                              controller: _textEditingController,
+                              decoration: const InputDecoration(
+                                  border: InputBorder.none,
+                                  hintText: 'Search a specific sound!'),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
+                    height: 50,
+                  )
+                : Container(
+                    height: 0,
                   ),
-                ),
-              ),
-              height: 50,
-            ),
             Expanded(
               child: StreamBuilder<Object>(
                   stream: Stream.fromFuture(read()),
@@ -164,26 +173,30 @@ class _MyAppState extends State<MyApp> {
                                     title: Text(
                                         searchList[index]['title'].toString()),
                                     onTap: () async {
-                                      ScaffoldMessenger.of(context)
-                                          .hideCurrentSnackBar();
-                                      var duration = await player.setAsset(
+                                      Get.closeCurrentSnackbar();
+                                      var duration = await player1.setAsset(
                                           'assets/' +
                                               searchList[index]['link']
                                                   .toString());
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(SnackBar(
-                                        backgroundColor:
-                                            Colors.green.withOpacity(0.85),
-                                        content: Text('Playing: ' +
-                                            searchList[index]['title']),
-                                        duration: duration as Duration,
-                                        action: SnackBarAction(
-                                            label: 'STOP',
+                                      Get.snackbar('Playing:',
+                                          '${searchList[index]['title']}',
+                                          duration: duration,
+                                          backgroundColor: Colors.lightGreen
+                                              .withOpacity(0.5),
+                                          animationDuration:
+                                              Duration(milliseconds: 570),
+                                          mainButton: TextButton(
                                             onPressed: () {
-                                              player.stop();
-                                            }),
-                                      ));
-                                      player.play();
+                                              player1.stop();
+                                              Get.closeCurrentSnackbar();
+                                            },
+                                            child: const Text(
+                                              'STOP',
+                                              style: TextStyle(
+                                                  color: Colors.white),
+                                            ),
+                                          ));
+                                      player1.play();
                                     },
                                   ),
                                 ],
@@ -202,9 +215,9 @@ class _MyAppState extends State<MyApp> {
         //   children: [
         //     ElevatedButton(
         //         onPressed: () async {
-        //           await player.setUrl(
+        //           await player1.setUrl(
         //               'https://admiralbullbot.github.io/playsounds/files/new/archbalanced.ogg');
-        //           player.play();
+        //           player1.play();
         //         },
         //         child: Text('Fus Ro Dah')),
         //   ],
@@ -213,15 +226,7 @@ class _MyAppState extends State<MyApp> {
             actions: [
               PopupMenuButton(
                   onSelected: (value) {
-                    if (value == 1) {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: ((context) => const SavedSounds())))
-                        ..then(((value) {
-                          setState(() {});
-                        }));
-                    } else if (value == 2) {
+                    if (value == 2) {
                       scrollToIndex(0);
                     } else if (value == 3) {
                       scrollToIndex(7);
@@ -262,10 +267,6 @@ class _MyAppState extends State<MyApp> {
                     }
                   },
                   itemBuilder: ((context) => [
-                        const PopupMenuItem(
-                          value: 1,
-                          child: const Text('Favourites'),
-                        ),
                         const PopupMenuItem(
                           child: Text('Arch The Racist'),
                           value: 2,
