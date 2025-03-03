@@ -3,7 +3,8 @@ name: App Deployment - BackOffice
 on:
   push:
     branches:
-      -main
+      - main
+  workflow_dispatch:
 
 jobs:
   deploy-preview:
