@@ -1,7 +1,9 @@
 name: App Deployment - BackOffice
 
 on:
-  workflow_call:
+  push:
+    branches:
+      -main
 
 jobs:
   deploy-preview:
