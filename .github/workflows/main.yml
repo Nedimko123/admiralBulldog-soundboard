@@ -11,16 +11,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Set Environment Variables Based on Branch
+      - name: Set Environment Variable
         run: |
-          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            echo "DEPLOY_URL=${{ secrets.DEPLOY_URL_BACKOFFICE_PROD }}" >> $GITHUB_ENV
-          elif [[ "${{ github.ref }}" == "refs/heads/dev" ]]; then
-            echo "DEPLOY_URL=${{ secrets.DEPLOY_URL_BACKOFFICE_DEV }}" >> $GITHUB_ENV
-          else
-            echo "This branch is not dev or main. Skipping deployment."
-            exit 0
-          fi
+          echo "DEPLOY_URL=${{ secrets.DEPLOY_URL_BACKOFFICE_PROD }}" >> $GITHUB_ENV
 
       - name: Send Vercel Deploy Webhook
         run: |
