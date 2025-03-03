@@ -1,0 +1,25 @@
+name: App Deployment - BackOffice
+
+on:
+  workflow_call:
+
+jobs:
+  deploy-preview:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set Environment Variables Based on Branch
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "DEPLOY_URL=${{ secrets.DEPLOY_URL_BACKOFFICE_PROD }}" >> $GITHUB_ENV
+          elif [[ "${{ github.ref }}" == "refs/heads/dev" ]]; then
+            echo "DEPLOY_URL=${{ secrets.DEPLOY_URL_BACKOFFICE_DEV }}" >> $GITHUB_ENV
+          else
+            echo "This branch is not dev or main. Skipping deployment."
+            exit 0
+          fi
+
+      - name: Send Vercel Deploy Webhook
+        run: |
+          echo "Sending webhook to: $DEPLOY_URL"
+          curl -X POST "$DEPLOY_URL"
